@@ -62,14 +62,13 @@ exports.fetchresult = function(req, res){
             });
 		} else {
 
-			var stepIndex1 = 0, stepIndex2 = 0;
+			var stepIndex1 = 0;
 			
-			console.log(totalPage);
 			(function(){
 				var arg1 = arguments;
 				
 				if( stepIndex1 < totalPage.length ) {
-					var outerPage = totalPage[stepIndex1];
+					var outerPage = totalPage[stepIndex1], stepIndex2 = 0;
 
 					(function(){
 						
@@ -100,7 +99,7 @@ exports.fetchresult = function(req, res){
 								});
 								
 								res.on("error", function(){
-									tepIndex2++;
+									stepIndex2++;
 									arg2.callee();
 								});
 							});
