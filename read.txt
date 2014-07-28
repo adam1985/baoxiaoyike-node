@@ -1,0 +1,8 @@
+http://sudodev.cn/category/casperjsphantomjs
+http://www.oschina.net/code/snippet_84535_16533
+http://www.v2ex.com/t/60604
+http://www.cnblogs.com/ziyunfei/archive/2012/09/27/2706254.html
+http://blog.csdn.net/sagomilk/article/details/20800543
+
+http://docs.casperjs.org/en/latest/modules/casper.html#zoom
+phantomjs SlimerJS casperjs
