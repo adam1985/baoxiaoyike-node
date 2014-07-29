@@ -5,7 +5,7 @@
 
 var cheerio = require('cheerio');
 var nodegrass = require('nodegrass');
-var dateFormat = require('../dateFormat');
+var dateFormat = require('../module/dateFormat');
 var http = require("http");
 var fs = require('fs');
 var spawn = require('child_process').spawn;
@@ -35,9 +35,11 @@ exports.fetchresult = function(req, res){
 	var initTime = new Date();
 	var dateString = initTime.format("yyyyMMddhhmmss"),
         dirPath = './create/' + dateString,
+        logerDir = './loger',
         listPath = dirPath + '/list.txt',
-        jsonPath = dirPath + '/json.txt',
-        usernamePath = './username.txt';
+        pageJson = logerDir + '/pageJson.txt',
+        resultPath = logerDir + '/result.txt',
+        usernamePath = './model/username.txt';
 	fs.mkdirSync(dirPath, {mode : 'r+'});
 	//spawn('mkdir', [dirPath]);
 
@@ -59,6 +61,20 @@ exports.fetchresult = function(req, res){
                 fs.appendFileSync(listPath, '\r\n\r\n');
             });
         }
+    };
+
+
+    var successMessage = function( data ){
+        var list = [];
+        if( data.length ){
+            data.forEach(function(v){
+                list.push({
+                    title : v.title,
+                    sourcePage : v.sourcePage
+                });
+            });
+        }
+        return list;
     };
 
   var usernames = fs.readFileSync(usernamePath).toString().split(/\s+/);
@@ -155,11 +171,15 @@ exports.fetchresult = function(req, res){
 					}());
 				} else {
 
-                    fs.writeFileSync(jsonPath,JSON.stringify(totalPage) );
+                    fs.writeFileSync(pageJson, JSON.stringify(totalPage) );
+                    fs.writeFileSync(resultPath, JSON.stringify(successMessage( totalPage )) );
                     createpageMessage(totalPage);
 
 					res.set({'Content-Type':'text/plain'});
-					res.send(JSON.stringify({ suceess : true }));
+					res.send(JSON.stringify({
+                        success : true,
+                        data : successMessage( totalPage )
+                    }));
 				}
 			}());
 

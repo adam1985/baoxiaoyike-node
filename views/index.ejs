@@ -4,48 +4,68 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
 	<script src="/javascripts/jquery-2.1.1.min.js"></script>
-	
+    <script src="/javascripts/template.js"></script>
   </head>
   <body>
     
 	<div class="wrapper">
-		<div class="add-item-btn" id="add-item-btn">
-			<button>添加</button>
+		<div class="page-item-btn">
+			<button id="add-item-btn">添加</button>
+            <button id="empty-item-btn">全部清空</button>
 		</div>
+        <div class="hide page-load">
+            抓取页面中，请稍后...
+        </div>
 		<div class="page-item-box" id="page-item-box">
-			<div class="page-item">
-				<input type="text" value="" placeholder="请输入微信页面地址" />
-			</div>
-            <div class="page-item">
-                <input type="text" value="" placeholder="请输入微信页面地址" />
-            </div>
-            <div class="page-item">
-                <input type="text" value="" placeholder="请输入微信页面地址" />
-            </div>
-            <div class="page-item">
-                <input type="text" value="" placeholder="请输入微信页面地址" />
-            </div>
-            <div class="page-item">
-                <input type="text" value="" placeholder="请输入微信页面地址" />
-            </div>
+            <% if (list.length) { %>
+
+                <% for (var i = 0; i < list.length; i ++) { %>
+                    <div class="page-item">
+                        <input type="text" value="<%= list[i].sourcePage %>" placeholder="请输入微信页面地址" /> <span><%= list[i].title %></span>
+                    </div>
+                <% } %>
+
+            <% } else { %>
+                <% for (var i = 0; i < 5; i ++) { %>
+                <div class="page-item">
+                    <input type="text" value="" placeholder="请输入微信页面地址" />
+                </div>
+                <% } %>
+            <% } %>
 		</div>
 		<div class="post-page">
 			<input type="button" id="post-page-btn" value="提交"  />
 		</div>
 	</div>
+
+    <script id="page-item-template" type="text/html">
+        {{ if (list.length) { }}
+            {{ for (var i = 0; i < list.length; i ++) { }}
+                <div class="page-item">
+                        <input type="text" value="{{= list[i].sourcePage }}" placeholder="请输入微信页面地址" /> <span>{{= list[i].title }}</span>
+                </div>
+            {{ } }}
+        {{ } }}
+    </script>
 	
 	<script>
 		jQuery(function($){
-			var addItemBtn = $('#add-item-btn'), 
+			var addItemBtn = $('#add-item-btn'), emptyItemBtn = $('#empty-item-btn'),
 			pageBox = $('#page-item-box'), 
 			pageItemTemp = '<div class="page-item"><input type="text" placeholder="请输入微信页面地址" value=""></div>'; 
 			addItemBtn.click(function(){
 				pageBox.append(pageItemTemp);
-				
 			});
+
+            emptyItemBtn.click(function(){
+                pageBox.find('input').val('');
+                pageBox.find('span').html('');
+            });
 			
 			$('#post-page-btn').on('click', function(){
-				var pagelinks = pageBox.find('.page-item input'), data = [];
+				var pagelinks = pageBox.find('.page-item input'), data = [], pageLoad = $('.page-load');
+
+                pageLoad.show(0);
 				pagelinks.each(function(){
 					if(this.value ){
 						data.push( this.value );
@@ -59,9 +79,15 @@
 					data : {
 						urls : JSON.stringify(data)
 					},
-					success : function( data ){
-						if( data.success ) {
-                            alert('抓取成功!');
+					success : function( res ){
+                        pageLoad.hide(0);
+						if( res.success ) {
+
+                            var html = template.render('page-item-template', {
+                                list : res.data
+                            });
+
+                            $('#page-item-box').html( html );
                         }
 					}
 				})

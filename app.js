@@ -6,6 +6,8 @@
 var express = require('express')
   , routes = require('./routes')
   , fetch = require('./routes/fetch')
+  , postWeixin = require('./routes/postWeixin')
+  ,getWeixin = require('./routes/getWeixin')
   , http = require('http')
   , path = require('path');
 
@@ -29,6 +31,9 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 app.post('/fetch', fetch.fetchresult);
+app.get('/postWeixin', postWeixin);
+app.get('/getWeixin', getWeixin);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
