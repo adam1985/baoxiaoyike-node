@@ -1,4 +1,4 @@
-editor.getContent('<p>test</p>');
+
 jQuery(function($){
     $.ajax({
         url : 'http://127.0.0.1:3000/getWeixin',
@@ -23,12 +23,15 @@ jQuery(function($){
                     if( index < len && index < maxSize ) {
                     	
                         $('.js_edit').eq( index ).trigger('click');
-                        var page = data[index];
-                        $('.js_title').val( page.title );
+                        var page = data[index], jsTitle = $('.js_title');
+                        jsTitle.val( page.title );
+                        jsTitle.trigger('input');
                         $('.js_author').val( page.username );
                         $('iframe[id^="ueditor_"]').contents().find('body').html(page.content);
                         $('.frm_textarea').val( page.content );
                         $('.js_url').val( page.viewSource );
+                        $('.frm_checkbox').attr('checked', false);
+                        $('.js_show_cover_pic').removeClass('selected');
 
 						index++;
 						arg.callee();
