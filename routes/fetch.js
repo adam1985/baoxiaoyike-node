@@ -100,28 +100,27 @@ exports.fetchresult = function(req, res){
                 singlePage.username = targetUser;
 				singlePage.title = title;
 				singlePage.pages = [];
-				var iframe = $('iframe');
-				if(iframe.length){
-					iframe.each(function(i){
-						var $this = $(this), 
-						imgRex = /player\.html\?vid=(\w+)&/, 
-						innerPage = {} ,
-						pageUrl = $this.attr('src');
-						if( imgRex.test(pageUrl) ){
-							innerPage.imgSrc = 'http://shp.qpic.cn/qqvideo_ori/0/' + RegExp.$1 + '_496_280/0';
-							innerPage.pageUrl = pageUrl;
-						}
-						singlePage.pages.push(innerPage);
-
-					});
-				} else {
-					var imgRex = /var\s+msg_cdn_url\s+=\s+"(.*)";/gm,innerPage = {}, content = $('body').html();
-					if( imgRex.test(content) ){
-						innerPage.imgSrc = RegExp.$1;
-						singlePage.pages.push(innerPage);
-					}
-					
+				var imgRex = /var\s+msg_cdn_url\s+=\s+"(.*)";/gm,
+					innerPage = {}, 
+					content = $('body').html();
+				if( imgRex.test(content) ){
+					innerPage.imgSrc = RegExp.$1;
+					singlePage.pages.push(innerPage);
 				}
+				var iframe = $('iframe');
+
+				iframe.each(function(i){
+					var $this = $(this), 
+					imgRex = /player\.html\?vid=(\w+)&/, 
+					innerPage = {} ,
+					pageUrl = $this.attr('src');
+					if( imgRex.test(pageUrl) ){
+						innerPage.imgSrc = 'http://shp.qpic.cn/qqvideo_ori/0/' + RegExp.$1 + '_496_280/0';
+						innerPage.pageUrl = pageUrl;
+					}
+					singlePage.pages.push(innerPage);
+
+				});
 				
 				
 				totalPage.push(singlePage);
