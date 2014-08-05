@@ -53,8 +53,12 @@ exports.fetchresult = function(req, res){
                 fs.appendFileSync(listPath, v.viewSource + '\r\n');
                 if(v.pages.length){
                     v.pages.forEach(function(page){
+						
                         fs.appendFileSync(listPath, page.imgSrc + '\r\n');
-                        fs.appendFileSync(listPath, page.pageUrl + '\r\n');
+						if(page.pageUrl){
+							fs.appendFileSync(listPath, page.pageUrl + '\r\n');
+						}
+                        
                         fs.appendFileSync(listPath, '\r\n');
                     });
                 }
