@@ -116,11 +116,12 @@ exports.fetchresult = function(req, res){
 				iframe.each(function(i){
 					var $this = $(this), 
 					imgRex = /player\.html\?vid=(\w+)&/, 
+					pageUrlRex = /http:\/\/v\.qq\.com\/iframe\/player.html\?vid=\w+/,
 					innerPage = {} ,
 					pageUrl = $this.attr('src');
 					if( imgRex.test(pageUrl) ){
 						innerPage.imgSrc = 'http://shp.qpic.cn/qqvideo_ori/0/' + RegExp.$1 + '_496_280/0';
-						innerPage.pageUrl = pageUrl;
+						innerPage.pageUrl = pageUrl.match(pageUrlRex)[0];
 					}
 					singlePage.pages.push(innerPage);
 

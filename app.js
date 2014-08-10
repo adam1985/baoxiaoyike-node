@@ -7,7 +7,8 @@ var express = require('express')
   , routes = require('./routes')
   , fetch = require('./routes/fetch')
   , postWeixin = require('./routes/postWeixin')
-  ,getWeixin = require('./routes/getWeixin')
+  , getWeixin = require('./routes/getWeixin')
+  , getView = require('./routes/getView')
   , http = require('http')
   , path = require('path');
 
@@ -33,6 +34,7 @@ app.get('/', routes.index);
 app.post('/fetch', fetch.fetchresult);
 app.get('/postWeixin', postWeixin);
 app.get('/getWeixin', getWeixin);
+app.get('/getView', getView);
 
 
 http.createServer(app).listen(app.get('port'), function(){
