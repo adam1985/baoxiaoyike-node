@@ -93,7 +93,8 @@ exports.fetchresult = function(req, res){
 		var args = arguments;
 		if( pageIndex < length ){
 			var targetLink = pageLinks[pageIndex],
-                targetUser = userList[pageIndex];
+                //targetUser = userList[pageIndex];
+				targetUser = '點右边关註»';
 			
 			nodegrass.get(targetLink, function (data) {
 				var $ = cheerio.load(data);
