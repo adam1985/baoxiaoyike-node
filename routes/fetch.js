@@ -53,8 +53,11 @@ exports.fetchresult = function(req, res){
                 fs.appendFileSync(listPath, v.viewSource + '\r\n');
                 if(v.pages.length){
                     v.pages.forEach(function(page){
+                        
+						if(page.imgSrc){
+							fs.appendFileSync(listPath, page.imgSrc + '\r\n');
+						}
 						
-                        fs.appendFileSync(listPath, page.imgSrc + '\r\n');
 						if(page.pageUrl){
 							fs.appendFileSync(listPath, page.pageUrl + '\r\n');
 						}
@@ -93,49 +96,95 @@ exports.fetchresult = function(req, res){
 		var args = arguments;
 		if( pageIndex < length ){
 			var targetLink = pageLinks[pageIndex],
-                //targetUser = userList[pageIndex];
-				targetUser = '點右边关註»';
-			
-			nodegrass.get(targetLink, function (data) {
-				var $ = cheerio.load(data);
-				var singlePage = {}, 
-					title = $('title').text();
-                singlePage.sourcePage = targetLink;
+                targetUser = userList[pageIndex],
+				isWeixin = /mp\.weixin\.qq\.com/.test(targetLink);
+				//targetUser = '點右边关註»';
+				
+				var singlePage = {};
+				
+				singlePage.sourcePage = targetLink;
                 singlePage.viewSource = 'http://m.baoxiaoyike.cn';
                 singlePage.username = targetUser;
-				singlePage.title = title;
-				singlePage.pages = [];
-				var imgRex = /var\s+msg_cdn_url\s+=\s+"(.*)";/gm,
-					innerPage = {}, 
-					content = $('body').html();
-				if( imgRex.test(content) ){
-					innerPage.imgSrc = RegExp.$1;
-					singlePage.pages.push(innerPage);
-				}
-				var iframe = $('iframe');
-
-				iframe.each(function(i){
-					var $this = $(this), 
-					imgRex = /player\.html\?vid=(\w+)&/, 
-					pageUrlRex = /http:\/\/v\.qq\.com\/iframe\/player.html\?vid=\w+/,
-					innerPage = {} ,
-					pageUrl = $this.attr('src');
-					if( imgRex.test(pageUrl) ){
-						innerPage.imgSrc = 'http://shp.qpic.cn/qqvideo_ori/0/' + RegExp.$1 + '_496_280/0';
-						innerPage.pageUrl = pageUrl.match(pageUrlRex)[0];
+				
+			if( isWeixin ) {
+				nodegrass.get(targetLink, function (data) {
+					var $ = cheerio.load(data),
+						title = $('title').text();
+					
+					singlePage.title = title;
+					singlePage.pages = [];
+					
+					var imgRex = /var\s+msg_cdn_url\s+=\s+"(.*)";/gm,
+						innerPage = {}, 
+						content = $('body').html();
+					if( imgRex.test(content) ){
+						innerPage.imgSrc = RegExp.$1;
+						singlePage.pages.push(innerPage);
 					}
-					singlePage.pages.push(innerPage);
+					
+					var iframe = $('iframe');
+					iframe.each(function(i){
+						var $this = $(this), 
+						imgRex = /player\.html\?vid=(\w+)&/, 
+						pageUrlRex = /http:\/\/v\.qq\.com\/iframe\/player.html\?vid=\w+/,
+						innerPage = {} ,
+						pageUrl = $this.attr('src');
+						if( imgRex.test(pageUrl) ){
+							innerPage.imgSrc = 'http://shp.qpic.cn/qqvideo_ori/0/' + RegExp.$1 + '_496_280/0';
+							innerPage.pageUrl = pageUrl.match(pageUrlRex)[0];
+						}
+						singlePage.pages.push(innerPage);
+					});
 
+					
+					totalPage.push(singlePage);
+					
+					pageIndex++;
+					args.callee();
+				}, 'utf8').on('error', function(e) {
+					args.callee();
 				});
+			} else {
+				var vidRex;
+				if( /vid=/.test(targetLink) ){
+					vidRex = /(?:vid=)(\w{11}?)/;
+				} else {
+					vidRex = /(\w{11}?)(?:\.html)/;
+				}
+				
+				singlePage.pages = [];
+				
+
+				
+				var innerPage = {};
 				
 				
-				totalPage.push(singlePage);
 				
-				pageIndex++;
-				args.callee();
-			}, 'utf8').on('error', function(e) {
-                args.callee();
-            });
+				baoxiaoyike = function(data){
+					singlePage.title = data.vl.vi[0].ti;
+					innerPage.imgSrc = 'http://shp.qpic.cn/qqvideo_ori/0/' + vid + '_496_280/0';
+					innerPage.pageUrl = 'http://v.qq.com/iframe/player.html?vid=' + vid;
+					singlePage.pages.push({},innerPage);
+					totalPage.push(singlePage);
+					pageIndex++;
+					args.callee();
+				}
+
+				if( vidRex.test(targetLink) ){
+					var vid = vidRex.exec(targetLink)[1];
+					nodegrass.get('http://vv.video.qq.com/getinfo?vids='+ vid + '&otype=json&callback=baoxiaoyike', 
+					function ( data ) {
+						data = data.toString();
+						eval(data);
+						
+					}, 'utf8').on('error', function(e) {
+						args.callee();
+					});
+
+				}
+			}
+			
+			
 		} else {
 
 			var stepIndex1 = 0;
@@ -152,33 +201,39 @@ exports.fetchresult = function(req, res){
 						
 						if( stepIndex2 < outerPage.pages.length ) {
 						
-							var innerPage = outerPage.pages[stepIndex2];
-							http.get(innerPage.imgSrc, function(res){
-								var imgData = "";
+							var innerPage = outerPage.pages[stepIndex2], imgSrc = innerPage.imgSrc;
+							if( imgSrc ) {
+								http.get(innerPage.imgSrc, function(res){
+									var imgData = "";
 
-								res.setEncoding("binary"); 
+									res.setEncoding("binary"); 
 
 
-								res.on("data", function(chunk){
-									imgData+=chunk;
-								});
+									res.on("data", function(chunk){
+										imgData+=chunk;
+									});
 
-								res.on("end", function(){
-									fs.writeFile(dirPath + '/' + stepIndex1 + '' + stepIndex2 + '.jpg', imgData, "binary", function(err){
-										if(err){
-											console.log("down fail");
-										}
-										console.log("down success");
+									res.on("end", function(){
+										fs.writeFile(dirPath + '/' + stepIndex1 + '' + stepIndex2 + '.jpg', imgData, "binary", function(err){
+											if(err){
+												console.log("down fail");
+											}
+											console.log("down success");
+											stepIndex2++;
+											arg2.callee();
+										});
+									});
+									
+									res.on("error", function(){
 										stepIndex2++;
 										arg2.callee();
 									});
 								});
-								
-								res.on("error", function(){
-									stepIndex2++;
-									arg2.callee();
-								});
-							});
+							} else {
+								stepIndex2++;
+								arg2.callee();
+							}
+							
 						} else {
 							stepIndex1++;
 							arg1.callee();
