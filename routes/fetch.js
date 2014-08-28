@@ -193,7 +193,7 @@ exports.fetchresult = function(req, res){
 				var singlePage = {};
 				
 				singlePage.sourcePage = targetLink;
-                singlePage.viewSource = 'http://m.baoxiaoyike.cn';
+                singlePage.viewSource = 'http://mp.weixin.qq.com/mp/getmasssendmsg?__biz=MjM5NTI1NDczOA==#wechat_webview_type=1&wechat_redirect';
                 singlePage.username = targetUser;
 				
 			if( isWeixin ) {
@@ -272,6 +272,8 @@ exports.fetchresult = function(req, res){
 					});
 
 				}*/
+				
+				
 
 				
 				getUrlVid(targetLink, function($vid){
@@ -291,6 +293,7 @@ exports.fetchresult = function(req, res){
 		} else {
 
 			var stepIndex1 = 0;
+		
 			
 			(function(){
 				var arg1 = arguments;
@@ -311,21 +314,22 @@ exports.fetchresult = function(req, res){
 
 									res.setEncoding("binary"); 
 
-
-									res.on("data", function(chunk){
-										imgData+=chunk;
-									});
-
-									res.on("end", function(){
-										fs.writeFile(dirPath + '/' + stepIndex1 + '' + stepIndex2 + '.jpg', imgData, "binary", function(err){
-											if(err){
-												console.log("down fail");
-											}
-											console.log("down success");
-											stepIndex2++;
-											arg2.callee();
+									try{
+										res.on("data", function(chunk){
+											imgData+=chunk;
 										});
-									});
+
+										res.on("end", function(){
+											fs.writeFile(dirPath + '/' + stepIndex1 + '' + stepIndex2 + '.jpg', imgData, "binary", function(err){
+												if(err){
+													console.log("down fail");
+												}
+												console.log("down success");
+												stepIndex2++;
+												arg2.callee();
+											});
+										});
+									}catch(e){};
 									
 									res.on("error", function(){
 										stepIndex2++;
