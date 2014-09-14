@@ -12,8 +12,15 @@ module.exports = function(req, res){
 
     if( postSource.length ){
         postSource.forEach(function(v, i){
-            postSource[i]['content'] = ejs.render(contentTemplate, {
-                list : v.pages
+			var imgPath = 'http://adam1985.github.io/bxyk/assets/images/logo.jpg';
+			v.pages.forEach(function(vv, ii){
+				if( vv.imgSrc ) {
+					imgPath = vv.imgSrc;
+				}
+			});
+			postSource[i]['content'] = ejs.render(contentTemplate, {
+                list : v.pages,
+				picSrc : imgPath
             });
         });
     }
